@@ -219,8 +219,8 @@ static int endace_daq_stop(void *handle)
 	{
 		return DAQ_ERROR;
 	}
-	dag_stop_stream(ctx->fd, 0);
-	dag_detach_stream(ctx->fd, 0);
+	dag_stop_stream(ctx->fd, ctx->stream);
+	dag_detach_stream(ctx->fd, ctx->stream);
  	ctx->state = DAQ_STATE_STOPPED;
 	return DAQ_SUCCESS;
 }
