@@ -190,6 +190,9 @@ static int endace_daq_acquire(void *handle, int cnt, DAQ_Analysis_Func_t callbac
 			}
 			ctx->stats.verdicts[verdict]++;
 			packets++;
+
+			if(rec->lctr)
+				ctx->stats.hw_packets_dropped += rec->lctr;
 		}
 	}
 	return DAQ_SUCCESS;
@@ -219,8 +222,8 @@ static int endace_daq_stop(void *handle)
 	{
 		return DAQ_ERROR;
 	}
-	dag_stop_stream(ctx->fd, ctx->stream);
-	dag_detach_stream(ctx->fd, ctx->stream);
+	dag_stop_stream(ctx->fd, 0);
+	dag_detach_stream(ctx->fd, 0);
  	ctx->state = DAQ_STATE_STOPPED;
 	return DAQ_SUCCESS;
 }
@@ -248,11 +251,24 @@ static DAQ_State endace_daq_check_status(void *handle)
 
 static int endace_daq_get_stats(void *handle, DAQ_Stats_t * stats)
 {
-    return DAQ_SUCCESS;
+	EndaceDAGCtx_t *ctx = (EndaceDAGCtx_t *) handle;
+	if (!ctx)
+	{
+		return DAQ_ERROR;
+	}
+	ctx->stats.hw_packets_received = (ctx->stats.packets_received + ctx->stats.hw_packets_dropped);
+	memcpy(stats, &(ctx->stats), sizeof(DAQ_Stats_t));
+	return DAQ_SUCCESS;
 }
 
 static void endace_daq_reset_stats(void *handle)
 {
+	EndaceDAGCtx_t *ctx = (EndaceDAGCtx_t *) handle;
+	if (!ctx)
+	{
+		return;
+	}
+	memset(&(ctx->stats), 0, sizeof(DAQ_Stats_t));
 }
 
 static int endace_daq_get_snaplen(void *handle)
