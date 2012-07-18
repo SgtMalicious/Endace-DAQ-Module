@@ -143,7 +143,9 @@ static int endace_daq_acquire(void *handle, int cnt, DAQ_Analysis_Func_t callbac
 	DAQ_Verdict verdict;
 
 	uint8_t *frame = NULL;
-	uint8_t *pload = NULL;
+	uint8_t *cp = NULL;
+	uint8_t *ep = NULL;
+
 	uint64_t lts;
 
 	dag_record_t *rec;
@@ -155,18 +157,36 @@ static int endace_daq_acquire(void *handle, int cnt, DAQ_Analysis_Func_t callbac
 		return DAQ_ERROR;
 	}
 	ctx->analysis_func = callback;
-	while (packets < cnt || cnt <= 0)
+
+	while (!ctx->breakloop && (packets < cnt || cnt <=0))
 	{
-		if (ctx->breakloop) break;
-		rec = (dag_record_t*)dag_rx_stream_next_record(ctx->fd, ctx->stream);
-		if(rec && (rec->type == TYPE_ETH))
+		if ((ep = dag_advance_stream(ctx->fd, ctx->stream, &cp)) == NULL)
 		{
+			snprintf(ctx->errbuf, ERROR_BUF_SIZE, "%s: failed advancing stream: %d on Endace adapter: %s!", __FUNCTION__, ctx->stream, ctx->name);
+			return DAQ_ERROR;
+		}
+
+		if (ep-cp == 0) continue;
+
+		while (cp < ep && (packets < cnt || cnt <=0))
+		{
+
+			rec = (dag_record_t*)cp;
 			reclen = ntohs(rec->rlen);
+
+			/*  Advance the stream if a short read is detected */
+			if ((ep-cp) < reclen) break;
+
+			/* Advance the current pointer */
+			cp += reclen;
+
+			if (rec->type != TYPE_ETH)
+				continue;
+
 			frame = &(rec->rec.eth.dst[0]);
-			pload = &(rec->rec.eth.pload[0]);
 
 			hdr.caplen = (((uint8_t *)rec + reclen) - frame);
-			hdr.pktlen = (((uint8_t *)rec + reclen) - pload);
+			hdr.pktlen = hdr.caplen;
 
 			lts = rec->ts;
 			hdr.ts.tv_sec = lts >> 32;
