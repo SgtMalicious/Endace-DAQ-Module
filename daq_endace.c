@@ -135,8 +135,13 @@ static int endace_daq_start(void *handle)
 	return DAQ_SUCCESS;
 }
 
+#if DAQ_API_VERSION == 0x00010001
 static int endace_daq_acquire(void *handle, int cnt, DAQ_Analysis_Func_t callback, void *user)
 {
+#elif DAQ_API_VERSION == 0x00010002
+static int endace_daq_acquire(void *handle, int cnt, DAQ_Analysis_Func_t callback, DAQ_Meta_Func_t metaback, void *user)
+{
+#endif
 	int packets = 0;
 
 	DAQ_PktHdr_t hdr;
@@ -199,7 +204,14 @@ static int endace_daq_acquire(void *handle, int cnt, DAQ_Analysis_Func_t callbac
 				hdr.ts.tv_usec -= 1000000;
 			}
 
+#if DAQ_API_VERSION == 0x00010001
 			hdr.device_index = -1;
+#elif DAQ_API_VERSION == 0x00010002
+			hdr.ingress_index = -1;
+			hdr.ingress_group = -1;
+			hdr.egress_index = -1;
+			hdr.egress_group = -1;
+#endif
 			hdr.flags = 0;
 
 			ctx->stats.packets_received++;
@@ -366,5 +378,11 @@ DAQ_SO_PUBLIC const DAQ_Module_t DAQ_MODULE_DATA =
     .get_datalink_type = endace_daq_get_datalink_type,
     .get_errbuf = endace_daq_get_errbuf,
     .set_errbuf = endace_daq_set_errbuf,
-    .get_device_index = endace_daq_get_device_index
+    .get_device_index = endace_daq_get_device_index,
+#if DAQ_API_VERSION == 0x00010002
+    .modify_flow = NULL,
+    .hup_prep = NULL,
+    .hup_apply = NULL,
+    .hup_post = NULL,
+#endif
   };
