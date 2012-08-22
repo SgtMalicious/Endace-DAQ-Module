@@ -67,7 +67,6 @@ static int endace_daq_initialize(const DAQ_Config_t * config, void **ctxt_ptr, c
 		snprintf(errbuf, len, "%s: failed to allocate memory for the new Endace DAG context!", __FUNCTION__);
 		return DAQ_ERROR_NOMEM;
 	}
-	memset (ctx, 0, sizeof (EndaceDAGCtx_t));
 
 	// Parse device information out for processing
 	if ( dag_parse_name(config->name, ctx->name, DAGNAME_BUFSIZE, &ctx->stream) < 0 )
