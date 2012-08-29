@@ -179,7 +179,7 @@ static int endace_daq_acquire(void *handle, int cnt, DAQ_Analysis_Func_t callbac
 			reclen = ntohs(rec->rlen);
 
 			/*  Advance the stream if a short read is detected */
-			if ((uint8_t)(ep-cp) < reclen) break;
+			if ((ep-cp) < reclen) break;
 
 			/* Advance the current pointer */
 			cp += reclen;
