@@ -7,9 +7,28 @@ External data acquisition module for Snort which reads directly from an Endace D
 * Endace DAG SDK (available with the purchase of an [Endace DAG](http://www.endace.com/endace-dag-high-speed-packet-capture-cards.html) card)
 * [Snort DAQ libraries](http://www.snort.org/snort-downloads)
 
+## Installation
+
+* Compile and install Endace SDK.
+* Compile and install Snort DAQ libraries. (Version 1.1 or 2.0 should work.)
+* Clone this repository or download and extract the [zip archive file.](http://bit.ly/111cHdU)
+* Configure and compile
+<pre>
+    autoreconf -ivf
+    ./configure
+    make
+    make install
+</pre>
+* Add the configuration items to snort.conf
+<pre>
+    config daq: endace
+    config daq_dir: /usr/local/lib/daq
+    config daq_mode: passive
+</pre>
+
 ## Caveats 
 
-* This code has not been thoroughly tested.
+* This code has been somewhat tested.
 
 ## Thanks
 
@@ -19,7 +38,7 @@ External data acquisition module for Snort which reads directly from an Endace D
 
 ## License
 
-Copyright (c) 2012 William Allison
+Copyright (c) 2013 William Allison
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
