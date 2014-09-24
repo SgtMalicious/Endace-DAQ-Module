@@ -90,8 +90,6 @@ static int endace_daq_set_filter(void *handle, const char *filter)
 static int endace_daq_start(void *handle)
 {
 
-	char options[128];
-
 	EndaceDAGCtx_t *ctx = (EndaceDAGCtx_t *) handle;
 	if (!ctx)
 	{
@@ -101,13 +99,6 @@ static int endace_daq_start(void *handle)
 	if ((ctx->fd = dag_open(ctx->name)) < 0)
 	{
 		snprintf(ctx->errbuf, ERROR_BUF_SIZE, "%s: failed opening to Endace adapter %s!", __FUNCTION__, ctx->name);
-		return DAQ_ERROR;
-	}
-
-	snprintf(options, sizeof(options), "slen=%d", ctx->snaplen);
-	if ((dag_configure(ctx->fd, options)) < 0)
-	{
-		snprintf(ctx->errbuf, ERROR_BUF_SIZE, "%s: failed configuring the Endace adapter %s!", __FUNCTION__, ctx->name);
 		return DAQ_ERROR;
 	}
 
