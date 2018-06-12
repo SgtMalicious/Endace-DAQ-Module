@@ -45,6 +45,8 @@ typedef struct _endace_dag_context {
 	struct timeval timeout;
 	struct timeval poll;
 
+	uint8_t *bottom;
+
 	DAQ_Analysis_Func_t analysis_func;
 	DAQ_Stats_t stats;
 	DAQ_State state;
@@ -90,8 +92,6 @@ static int endace_daq_set_filter(void *handle, const char *filter)
 static int endace_daq_start(void *handle)
 {
 
-	char options[128];
-
 	EndaceDAGCtx_t *ctx = (EndaceDAGCtx_t *) handle;
 	if (!ctx)
 	{
@@ -101,13 +101,6 @@ static int endace_daq_start(void *handle)
 	if ((ctx->fd = dag_open(ctx->name)) < 0)
 	{
 		snprintf(ctx->errbuf, ERROR_BUF_SIZE, "%s: failed opening to Endace adapter %s!", __FUNCTION__, ctx->name);
-		return DAQ_ERROR;
-	}
-
-	snprintf(options, sizeof(options), "slen=%d", ctx->snaplen);
-	if ((dag_configure(ctx->fd, options)) < 0)
-	{
-		snprintf(ctx->errbuf, ERROR_BUF_SIZE, "%s: failed configuring the Endace adapter %s!", __FUNCTION__, ctx->name);
 		return DAQ_ERROR;
 	}
 
@@ -147,7 +140,6 @@ static int endace_daq_acquire(void *handle, int cnt, DAQ_Analysis_Func_t callbac
 	DAQ_Verdict verdict;
 
 	uint8_t *frame = NULL;
-	uint8_t *cp = NULL;
 	uint8_t *ep = NULL;
 
 	uint64_t lts;
@@ -164,25 +156,30 @@ static int endace_daq_acquire(void *handle, int cnt, DAQ_Analysis_Func_t callbac
 
 	while (!ctx->breakloop && (packets < cnt || cnt <=0))
 	{
-		if ((ep = dag_advance_stream(ctx->fd, ctx->stream, &cp)) == NULL)
+		if ((ep = dag_advance_stream(ctx->fd, ctx->stream, &ctx->bottom)) == NULL)
 		{
 			snprintf(ctx->errbuf, ERROR_BUF_SIZE, "%s: failed advancing stream: %d on Endace adapter: %s!", __FUNCTION__, ctx->stream, ctx->name);
 			return DAQ_ERROR;
 		}
 
-		if (ep-cp == 0) continue;
+		if (ep - ctx->bottom == 0)
+                {
+                    /* Timeout with no packets, break out so we can
+                     * exit if needed. */
+                    return 0;
+                }
 
-		while (cp < ep && (packets < cnt || cnt <=0))
+		while (ctx->bottom < ep && (packets < cnt || cnt <=0))
 		{
 
-			rec = (dag_record_t*)cp;
+			rec = (dag_record_t*)ctx->bottom;
 			reclen = ntohs(rec->rlen);
 
 			/*  Advance the stream if a short read is detected */
-			if ((ep-cp) < reclen) break;
+			if ((ep - ctx->bottom) < reclen) break;
 
 			/* Advance the current pointer */
-			cp += reclen;
+			ctx->bottom += reclen;
 
 			if (rec->type != TYPE_ETH)
 				continue;
