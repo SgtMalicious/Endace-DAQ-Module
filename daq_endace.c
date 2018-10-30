@@ -130,7 +130,7 @@ static int endace_daq_start(void *handle)
 #if DAQ_API_VERSION == 0x00010001
 static int endace_daq_acquire(void *handle, int cnt, DAQ_Analysis_Func_t callback, void *user)
 {
-#elif DAQ_API_VERSION == 0x00010002
+#elif DAQ_API_VERSION >= 0x00010002
 static int endace_daq_acquire(void *handle, int cnt, DAQ_Analysis_Func_t callback, DAQ_Meta_Func_t metaback, void *user)
 {
 #endif
@@ -202,7 +202,7 @@ static int endace_daq_acquire(void *handle, int cnt, DAQ_Analysis_Func_t callbac
 
 #if DAQ_API_VERSION == 0x00010001
 			hdr.device_index = -1;
-#elif DAQ_API_VERSION == 0x00010002
+#elif DAQ_API_VERSION >= 0x00010002
 			hdr.ingress_index = -1;
 			hdr.ingress_group = -1;
 			hdr.egress_index = -1;
@@ -375,7 +375,7 @@ DAQ_SO_PUBLIC const DAQ_Module_t DAQ_MODULE_DATA =
     .get_errbuf = endace_daq_get_errbuf,
     .set_errbuf = endace_daq_set_errbuf,
     .get_device_index = endace_daq_get_device_index,
-#if DAQ_API_VERSION == 0x00010002
+#if DAQ_API_VERSION >= 0x00010002
     .modify_flow = NULL,
     .hup_prep = NULL,
     .hup_apply = NULL,

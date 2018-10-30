@@ -10,8 +10,8 @@ External data acquisition module for Snort which reads directly from an Endace D
 ## Installation
 
 * Compile and install Endace SDK.
-* Compile and install Snort DAQ libraries. (Version 1.1 or 2.0 should work.)
-* Clone this repository or download and extract the [zip archive file.](http://bit.ly/111cHdU)
+* Compile and install Snort DAQ libraries. (Version 1.1 or 2.x should work.)
+* Clone this repository or download and extract the [zip archive file.](https://github.com/SgtMalicious/Endace-DAQ-Module/archive/master.zip)
 * Configure and compile
 <pre>
     autoreconf -ivf
@@ -35,10 +35,11 @@ External data acquisition module for Snort which reads directly from an Endace D
 * Randy Caldejon at packetchaser.org for authoring the Napatech DAQ module
 * Brian Trammell at Carnegie Mellon for authoring the YAF DAG code
 * Endace for authoring tons of documentation
+* Jason Ish for some much needed updates and corrections
 
 ## License
 
-Copyright (c) 2013 William Allison
+Copyright (c) 2018 William Allison
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
